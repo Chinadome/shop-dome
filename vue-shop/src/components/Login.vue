@@ -21,53 +21,40 @@
 </template>
 <script>
 export default {
-    data(){
-        return{
-             frommodel: {
-             username: 'cheshi',
-             password: '123456'
-             },
-             rules:{
-                 username: [{required: true, message: '账号不可为空', trigger: 'blur'
-                 },{
-                 min: 3, max: 6, message: '账号长度在 3 到 6 个字符', trigger: 'blur' 
-                 }],
-                password:[{
-                required: true, message: '密码不可为空', trigger: 'blur'
-                },{
-                min: 6, max: 16, message: '密码长度在 6 到 16个字符', trigger: 'blur' 
-                }]
-             }
-        }
-    },
-     methods: {
-    reset() {
+  data () {
+    return {
+      frommodel: {
+        username: 'admin',
+        password: '123456'
+      },
+      rules: {
+        username: [{ required: true, message: '账号不可为空', trigger: 'blur'
+        }, {
+          min: 3, max: 6, message: '账号长度在 3 到 6 个字符', trigger: 'blur'
+        }],
+        password: [{
+          required: true, message: '密码不可为空', trigger: 'blur'
+        }, {
+          min: 6, max: 16, message: '密码长度在 6 到 16个字符', trigger: 'blur'
+        }]
+      }
+    }
+  },
+  methods: {
+    reset () {
       this.$refs.Loginfrom.resetFields()
     },
-    login() {
-      this.$refs.Loginfrom.validate((valid) => {
-        console.log(this.frommodel.password);
-         if (!valid) {
-         return this.$router.push("/login");}
-         if(this.frommodel.username=="cheshi"&&this.frommodel.password=="123456")
-         return  this.$message.success('登录成功')
-        else
-        return  this.$message.error('登录失败')
+    login () {
+      this.$refs.Loginfrom.validate(async (valid) => {
+        if (!valid) return
+        const { data: res } = await this.$http.post('/login', this.frommodel)
+        if (res.meta.status !== 200) return this.$message.error('登录失败')
+        this.$message.success('登录成功')
+        // 记录token
+        window.sessionStorage.setItem('token', res.data.token)
+        this.$router.push('/home')
       })
     }
-    // Login(){
-    //     this.$refs.Loginfrom.validate(async (valid)=>{
-    //        if(!valid)
-    //        return this.$router.push('/login');
-    //        const {data:res}=await this.$http.post('/login',this.Loginfrom);
-    //         console.log(res);
-    //     //    if(res.meta.stauts!==200)
-    //     //    this.$message.error("登录失败");
-    //     //    else
-    //     //    this.$message.success("登录成功");
-
-    //     })
-    // }
   }
 }
 </script>
