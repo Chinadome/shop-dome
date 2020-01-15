@@ -18,13 +18,14 @@
       unique-opened
       :collapse='isfoding'
        :collapse-transition='false'
-       >
+       :default-active="isIndex"
+      router >
       <el-submenu :index="item.id +''" :key='item.id' v-for='item in meunlist'>
         <template slot="title">
           <i :class="isconobj[item.id]"></i>
           <span>{{item.authName}}</span>
         </template>
-          <el-menu-item :index="finditem.id +''" :key='finditem.id' v-for="finditem in item.children">
+          <el-menu-item :index="'/'+finditem.path" :key='finditem.id' v-for="finditem in item.children" @click="getReal('/'+finditem.path)">
              <template slot="title">
           <i class="el-icon-menu"></i>
           <span>{{finditem.authName}}</span>
@@ -33,7 +34,9 @@
       </el-submenu>
     </el-menu>
         </el-aside>
-        <el-main>Main</el-main>
+        <el-main>
+          <router-view></router-view>
+        </el-main>
      </el-container>
   </el-container>
 </template>
@@ -42,6 +45,7 @@ export default {
   // 组件渲染完成时触发
   created () {
     this.getMenulist()
+    this.isIndex = window.sessionStorage.getItem('getIndex')
   },
   data () {
     return {
@@ -53,7 +57,8 @@ export default {
         '145': 'iconfont icon-baobiao',
         '103': 'iconfont icon-tijikongjian'
       },
-      isfoding: false
+      isfoding: false,
+      isIndex: ''
     }
   },
   methods: {
@@ -64,11 +69,15 @@ export default {
     async  getMenulist () {
       let { data: res } = await this.$http.get('menus')
       this.meunlist = res.data
-      console.log(res.data)
     },
     // 控制菜单或展开
     Foldingswitch  () {
       this.isfoding = !this.isfoding
+    },
+    // 高亮显示
+    getReal (obj) {
+      window.sessionStorage.setItem('getIndex', obj)
+      this.isIndex = obj
     }
 
   }
