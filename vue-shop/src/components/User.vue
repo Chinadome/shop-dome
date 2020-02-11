@@ -34,10 +34,10 @@
               </template>
            </el-table-column>
            <el-table-column align="center" label="操作">
-              <template >
-              <el-button type="primary" icon="el-icon-edit" size="mini">
+              <template slot-scope="scope">
+              <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)">
               </el-button>
-              <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+              <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeUserById(scope.row.id)"></el-button>
               <el-tooltip class="item" :enterable="false" effect="dark" content="分配角色" placement="top">
               <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
               </el-tooltip>
@@ -76,6 +76,27 @@
           <span slot="footer" class="dialog-footer">
          <el-button @click="addUserdialog = false">取 消</el-button>
          <el-button type="primary" @click="addUser">确 定</el-button>
+          </span>
+          </el-dialog>
+           <!--修改用户对话框-->
+         <el-dialog
+         title="修改用户"
+        :visible.sync="editUserdialog"
+        width="50%" @close="editDialogClosed">
+        <el-form :model="editForm" :rules="edittFormRules" ref="editFormRef" label-width="70px">
+        <el-form-item label="用户名" prop="username">
+            <el-input v-model="editForm.username" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+           <el-input v-model="editForm.email"></el-input>
+         </el-form-item>
+        <el-form-item label="手机" prop="mobile">
+           <el-input v-model="editForm.mobile"></el-input>
+        </el-form-item>
+        </el-form>
+          <span slot="footer" class="dialog-footer">
+         <el-button @click="editUserdialog = false">取 消</el-button>
+         <el-button type="primary" @click="editUser">确 定</el-button>
           </span>
           </el-dialog>
         </el-card>
@@ -134,6 +155,19 @@ export default {
           { required: true, message: '请输入电话', trigger: 'blur' },
           { validator: checkMobile }
         ]
+      },
+      editUserdialog: false,
+      editForm: {},
+      // 修改用户验证规则
+      edittFormRules: {
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { validator: checkEmail }
+        ],
+        mobile: [
+          { required: true, message: '请输入电话', trigger: 'blur' },
+          { validator: checkMobile }
+        ]
       }
     }
   },
@@ -184,6 +218,53 @@ export default {
         this.addUserdialog = false
         this.getUserList()
       })
+    },
+    // 监听修改用户对话框的关闭事件
+    editDialogClosed () {
+      this.$refs.editFormRef.resetFields()
+    },
+    // 编辑用户
+    async   showEditDialog (id) {
+      // eslint-disable-next-line no-unused-vars
+      const { data: res } = await this.$http.get('users/' + id)
+      if (res.meta.status !== 200) {
+        return this.$message.error('用户查询信息失败！')
+      }
+      this.editUserdialog = true
+      this.editForm = res.data
+    },
+    // 提交编辑
+    editUser () {
+      this.$refs.editFormRef.validate(async (valid) => {
+        if (!valid) return
+        const { data: res } = await this.$http.put('users/' + this.editForm.id, {
+          email: this.editForm.email,
+          mobile: this.editForm.mobile
+        })
+        if (res.meta.status !== 200) {
+          return this.$$message.error('用户跟新列表失败！')
+        }
+        this.editUserdialog = false
+        this.getUserList()
+        this.$message.success('更新列表成功！')
+      })
+    },
+    // 根据id删除用户
+    async  removeUserById (id) {
+      const confirm = await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch(err => err)
+      if (confirm !== 'confirm') {
+        return this.$message.info('删除已取消')
+      }
+      const { data: res } = await this.$http.delete('users/' + id)
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除失败！')
+      }
+      this.$message.success('删除成功')
+      this.getUserList()
     }
   }
 }
