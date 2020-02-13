@@ -242,7 +242,7 @@ export default {
           mobile: this.editForm.mobile
         })
         if (res.meta.status !== 200) {
-          return this.$$message.error('用户跟新列表失败！')
+          return this.$message.error('用户跟新列表失败！')
         }
         this.editUserdialog = false
         this.getUserList()
