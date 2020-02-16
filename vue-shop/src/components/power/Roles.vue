@@ -278,13 +278,12 @@ export default {
       }
     },
     async  addTree () {
-      alert(this.roleId + '***' + this.$refs.tree.getCheckedKeys())
       const { data: res } = await this.$http.post(`roles/${this.roleId}/rights`,
         {
           roleId: this.roleId,
           rids: this.$refs.tree.getCheckedKeys()
         })
-      if (res.meta.status !== 201) return this.$message.error('添加权限失败')
+      if (res.meta.status !== 200) return this.$message.error('添加权限失败')
       this.$message.success('添加成功')
       this.treedialog = false
       this.getRolesList()
